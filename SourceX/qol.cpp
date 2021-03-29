@@ -46,6 +46,20 @@ void FillRect(CelOutputBuffer out, int x, int y, int width, int height, BYTE col
 
 } // namespace
 
+bool ShrineIsCrippling(int i)
+{
+        switch(object[i]._oVar1) {
+        case SHRINE_FASCINATING:
+        case SHRINE_ORNATE:
+        case SHRINE_SACRED:
+                return true;
+                break;
+        default:
+                return false;
+                break;
+        }
+}
+
 void FreeQol()
 {
 	if (sgOptions.Gameplay.bEnemyHealthBar) {

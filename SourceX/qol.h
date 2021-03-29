@@ -10,6 +10,7 @@
 
 DEVILUTION_BEGIN_NAMESPACE
 
+bool ShrineIsCrippling(int i);
 void FreeQol();
 void InitQol();
 void DrawMonsterHealthBar(CelOutputBuffer out);

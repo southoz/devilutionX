@@ -4,6 +4,7 @@
  * Implementation of object functionality, interaction, spawning, loading, etc.
  */
 #include "all.h"
+#include "options.h"
 
 DEVILUTION_BEGIN_NAMESPACE
 
@@ -4510,7 +4511,8 @@ void OperateObject(int pnum, int i, BOOL TeleFlag)
 		break;
 	case OBJ_SHRINEL:
 	case OBJ_SHRINER:
-		OperateShrine(pnum, i, IS_MAGIC);
+		if((!ShrineIsCrippling(i)) || (!sgOptions.Gameplay.bDisableCripplingShrines))
+			OperateShrine(pnum, i, IS_MAGIC);
 		break;
 	case OBJ_SKELBOOK:
 	case OBJ_BOOKSTAND:
@@ -4528,10 +4530,12 @@ void OperateObject(int pnum, int i, BOOL TeleFlag)
 		OperateArmorStand(pnum, i, sendmsg);
 		break;
 	case OBJ_GOATSHRINE:
-		OperateGoatShrine(pnum, i, LS_GSHRINE);
+		if(!sgOptions.Gameplay.bDisableCripplingShrines)
+			OperateGoatShrine(pnum, i, LS_GSHRINE);
 		break;
 	case OBJ_CAULDRON:
-		OperateCauldron(pnum, i, LS_CALDRON);
+		if(!sgOptions.Gameplay.bDisableCripplingShrines)
+			OperateCauldron(pnum, i, LS_CALDRON);
 		break;
 	case OBJ_BLOODFTN:
 	case OBJ_PURIFYINGFTN:

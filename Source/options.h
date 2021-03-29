@@ -91,6 +91,8 @@ struct GameplayOptions {
 	bool bRandomizeQuests;
 	/** @brief Indicates whether or not mosnter type (Animal, Demon, Undead) is shown along with other monster information. */
 	bool bShowMonsterType;
+	/** @brief Disable clicking on shrines which permanently cripple character. */
+	bool bDisableCripplingShrines;
 };
 
 struct ControllerOptions {
