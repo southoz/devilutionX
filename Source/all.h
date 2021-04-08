@@ -17,6 +17,8 @@
 
 #include "sdl_compat.h"
 
+#include "endian_int.h"
+
 #include "../types.h"
 
 #include "../SourceX/qol.h"

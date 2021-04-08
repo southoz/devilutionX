@@ -180,6 +180,7 @@ void packet_in::process_element(T &x)
 	if (decrypted_buffer.size() < sizeof(T))
 		throw packet_exception();
 	std::memcpy(&x, decrypted_buffer.data(), sizeof(T));
+	x = SwapBE(x);
 	decrypted_buffer.erase(decrypted_buffer.begin(),
 	    decrypted_buffer.begin() + sizeof(T));
 }
@@ -307,6 +308,7 @@ inline void packet_out::process_element(buffer_t &x)
 template <class T>
 void packet_out::process_element(T &x)
 {
+	x = SwapBE(x);
 	encrypted_buffer.insert(encrypted_buffer.end(), begin(x), end(x));
 }
 
