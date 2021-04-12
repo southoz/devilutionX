@@ -57,10 +57,8 @@ bool ShrineIsCrippling(int i)
         case SHRINE_ORNATE:
         case SHRINE_SACRED:
                 return true;
-                break;
         default:
                 return false;
-                break;
         }
 }
 
