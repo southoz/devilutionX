@@ -6,21 +6,21 @@
 #include "all.h"
 #include "../3rdParty/Storm/Source/storm.h"
 
-DEVILUTION_BEGIN_NAMESPACE
+namespace devilution {
 
 BYTE sgbNetUpdateRate;
 DWORD gdwMsgLenTbl[MAX_PLRS];
 static CCritSect sgMemCrit;
 DWORD gdwDeltaBytesSec;
-BOOLEAN nthread_should_run;
+bool nthread_should_run;
 DWORD gdwTurnsInTransit;
 uintptr_t glpMsgTbl[MAX_PLRS];
 SDL_threadID glpNThreadId;
 char sgbSyncCountdown;
 int turn_upper_bit;
-BOOLEAN sgbTicsOutOfSync;
+bool sgbTicsOutOfSync;
 char sgbPacketCountdown;
-BOOLEAN sgbThreadIsRunning;
+bool sgbThreadIsRunning;
 DWORD gdwLargestMsgSize;
 DWORD gdwNormalMsgSize;
 int last_tick;
@@ -36,11 +36,11 @@ void nthread_terminate_game(const char *pszFcn)
 	if (sErr == STORM_ERROR_INVALID_PLAYER) {
 		return;
 	} else if (sErr == STORM_ERROR_GAME_TERMINATED) {
-		gbGameDestroyed = TRUE;
+		gbGameDestroyed = true;
 	} else if (sErr == STORM_ERROR_NOT_IN_GAME) {
-		gbGameDestroyed = TRUE;
+		gbGameDestroyed = true;
 	} else {
-		app_fatal("%s:\n%s", pszFcn, TraceLastError());
+		app_fatal("%s:\n%s", pszFcn, SDL_GetError());
 	}
 }
 
@@ -73,42 +73,42 @@ DWORD nthread_send_and_recv_turn(DWORD cur_turn, int turn_delta)
 	return new_cur_turn;
 }
 
-BOOL nthread_recv_turns(BOOL *pfSendAsync)
+bool nthread_recv_turns(bool *pfSendAsync)
 {
-	*pfSendAsync = FALSE;
+	*pfSendAsync = false;
 	sgbPacketCountdown--;
 	if (sgbPacketCountdown) {
 		last_tick += gnTickDelay;
-		return TRUE;
+		return true;
 	}
 	sgbSyncCountdown--;
 	sgbPacketCountdown = sgbNetUpdateRate;
 	if (sgbSyncCountdown != 0) {
 
-		*pfSendAsync = TRUE;
+		*pfSendAsync = true;
 		last_tick += gnTickDelay;
-		return TRUE;
+		return true;
 	}
 #ifdef __3DS__
-	return FALSE;
+	return false;
 #else
 	if (!SNetReceiveTurns(0, MAX_PLRS, (char **)glpMsgTbl, gdwMsgLenTbl, (LPDWORD)player_state)) {
 		if (SErrGetLastError() != STORM_ERROR_NO_MESSAGES_WAITING)
 			nthread_terminate_game("SNetReceiveTurns");
-		sgbTicsOutOfSync = FALSE;
+		sgbTicsOutOfSync = false;
 		sgbSyncCountdown = 1;
 		sgbPacketCountdown = 1;
-		return FALSE;
+		return false;
 	} else {
 		if (!sgbTicsOutOfSync) {
-			sgbTicsOutOfSync = TRUE;
+			sgbTicsOutOfSync = true;
 			last_tick = SDL_GetTicks();
 		}
 		sgbSyncCountdown = 4;
 		multi_msg_countdown();
-		*pfSendAsync = TRUE;
+		*pfSendAsync = true;
 		last_tick += gnTickDelay;
-		return TRUE;
+		return true;
 	}
 #endif
 }
@@ -116,7 +116,7 @@ BOOL nthread_recv_turns(BOOL *pfSendAsync)
 static unsigned int nthread_handler(void *data)
 {
 	int delta;
-	BOOL received;
+	bool received;
 
 	if (nthread_should_run) {
 		while (1) {
@@ -144,7 +144,7 @@ void nthread_set_turn_upper_bit()
 	turn_upper_bit = 0x80000000;
 }
 
-void nthread_start(BOOL set_turn_upper_bit)
+void nthread_start(bool set_turn_upper_bit)
 {
 	const char *err, *err2;
 	DWORD largestMsgSize;
@@ -153,14 +153,14 @@ void nthread_start(BOOL set_turn_upper_bit)
 	last_tick = SDL_GetTicks();
 	sgbPacketCountdown = 1;
 	sgbSyncCountdown = 1;
-	sgbTicsOutOfSync = TRUE;
+	sgbTicsOutOfSync = true;
 	if (set_turn_upper_bit)
 		nthread_set_turn_upper_bit();
 	else
 		turn_upper_bit = 0;
 	caps.size = 36;
 	if (!SNetGetProviderCaps(&caps)) {
-		err = TraceLastError();
+		err = SDL_GetError();
 		app_fatal("SNetGetProviderCaps:\n%s", err);
 	}
 	gdwTurnsInTransit = caps.defaultturnsintransit;
@@ -188,12 +188,12 @@ void nthread_start(BOOL set_turn_upper_bit)
 	if (gdwNormalMsgSize > largestMsgSize)
 		gdwNormalMsgSize = largestMsgSize;
 	if (gbIsMultiplayer) {
-		sgbThreadIsRunning = FALSE;
+		sgbThreadIsRunning = false;
 		sgMemCrit.Enter();
-		nthread_should_run = TRUE;
+		nthread_should_run = true;
 		sghThread = CreateThread(nthread_handler, &glpNThreadId);
 		if (sghThread == NULL) {
-			err2 = TraceLastError();
+			err2 = SDL_GetError();
 			app_fatal("nthread2:\n%s", err2);
 		}
 	}
@@ -201,7 +201,7 @@ void nthread_start(BOOL set_turn_upper_bit)
 
 void nthread_cleanup()
 {
-	nthread_should_run = FALSE;
+	nthread_should_run = false;
 	gdwTurnsInTransit = 0;
 	gdwNormalMsgSize = 0;
 	gdwLargestMsgSize = 0;
@@ -213,7 +213,7 @@ void nthread_cleanup()
 	}
 }
 
-void nthread_ignore_mutex(BOOL bStart)
+void nthread_ignore_mutex(bool bStart)
 {
 	if (sghThread != NULL) {
 		if (bStart)
@@ -228,7 +228,7 @@ void nthread_ignore_mutex(BOOL bStart)
  * @brief Checks if it's time for the logic to advance
  * @return True if the engine should tick
  */
-BOOL nthread_has_500ms_passed()
+bool nthread_has_500ms_passed()
 {
 	DWORD currentTickCount;
 	int ticksElapsed;
@@ -242,4 +242,4 @@ BOOL nthread_has_500ms_passed()
 	return ticksElapsed >= 0;
 }
 
-DEVILUTION_END_NAMESPACE
+} // namespace devilution

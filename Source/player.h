@@ -3,12 +3,91 @@
  *
  * Interface of player functionality, leveling, actions, creation, loading, etc.
  */
-#ifndef __PLAYER_H__
-#define __PLAYER_H__
+#pragma once
 
-DEVILUTION_BEGIN_NAMESPACE
+#include <stdint.h>
 
-typedef enum PLR_MODE {
+#include "gendung.h"
+#include "items.h"
+#include "spelldat.h"
+#include "interfac.h"
+
+namespace devilution {
+
+/** Walking directions */
+enum {
+	// clang-format off
+	WALK_NE   =  1,
+	WALK_NW   =  2,
+	WALK_SE   =  3,
+	WALK_SW   =  4,
+	WALK_N    =  5,
+	WALK_E    =  6,
+	WALK_S    =  7,
+	WALK_W    =  8,
+	WALK_NONE = -1,
+	// clang-format on
+};
+
+enum plr_class : uint8_t {
+	PC_WARRIOR,
+	PC_ROGUE,
+	PC_SORCERER,
+	PC_MONK,
+	PC_BARD,
+	PC_BARBARIAN,
+	NUM_CLASSES
+};
+
+enum attribute_id : uint8_t {
+	ATTRIB_STR,
+	ATTRIB_MAG,
+	ATTRIB_DEX,
+	ATTRIB_VIT,
+};
+
+// Logical equipment locations
+enum inv_body_loc : uint8_t {
+	INVLOC_HEAD,
+	INVLOC_RING_LEFT,
+	INVLOC_RING_RIGHT,
+	INVLOC_AMULET,
+	INVLOC_HAND_LEFT,
+	INVLOC_HAND_RIGHT,
+	INVLOC_CHEST,
+	NUM_INVLOC,
+};
+
+enum player_graphic : uint16_t {
+	// clang-format off
+	PFILE_STAND     = 1 << 0,
+	PFILE_WALK      = 1 << 1,
+	PFILE_ATTACK    = 1 << 2,
+	PFILE_HIT       = 1 << 3,
+	PFILE_LIGHTNING = 1 << 4,
+	PFILE_FIRE      = 1 << 5,
+	PFILE_MAGIC     = 1 << 6,
+	PFILE_DEATH     = 1 << 7,
+	PFILE_BLOCK     = 1 << 8,
+	// everything except PFILE_DEATH
+	// 0b1_0111_1111
+	PFILE_NONDEATH = 0x17F
+	// clang-format on
+};
+
+enum anim_weapon_id : uint8_t {
+	ANIM_ID_UNARMED,
+	ANIM_ID_UNARMED_SHIELD,
+	ANIM_ID_SWORD,
+	ANIM_ID_SWORD_SHIELD,
+	ANIM_ID_BOW,
+	ANIM_ID_AXE,
+	ANIM_ID_MACE,
+	ANIM_ID_MACE_SHIELD,
+	ANIM_ID_STAFF,
+};
+
+enum PLR_MODE : uint8_t {
 	PM_STAND,
 	PM_WALK,  //Movement towards N, NW, or NE
 	PM_WALK2, //Movement towards S, SW, or SE
@@ -21,9 +100,9 @@ typedef enum PLR_MODE {
 	PM_SPELL,
 	PM_NEWLVL,
 	PM_QUIT,
-} PLR_MODE;
+};
 
-typedef enum action_id {
+enum action_id : int8_t {
 	// clang-format off
 	ACTION_WALK        = -2, // Automatic walk when using gamepad
 	ACTION_NONE        = -1,
@@ -44,14 +123,14 @@ typedef enum action_id {
 	ACTION_SPELLPLR    = 25,
 	ACTION_SPELLWALL   = 26,
 	// clang-format on
-} action_id;
+};
 
-typedef enum player_weapon_type {
+enum player_weapon_type : uint8_t {
 	WT_MELEE,
 	WT_RANGED,
-} player_weapon_type;
+};
 
-typedef struct PlayerStruct {
+struct PlayerStruct {
 	PLR_MODE _pmode;
 	Sint8 walkpath[MAX_PATH_LENGTH];
 	bool plractive;
@@ -214,7 +293,7 @@ typedef struct PlayerStruct {
 	bool pOriginalCathedral;
 	Uint16 wReflections;
 	Uint32 pDiabloKillLevel;
-	Uint32 pDifficulty;
+	_difficulty pDifficulty;
 	Uint32 pDamAcFlags;
 	Uint8 *_pNData;
 	Uint8 *_pWData;
@@ -225,15 +304,25 @@ typedef struct PlayerStruct {
 	Uint8 *_pHData;
 	Uint8 *_pDData;
 	Uint8 *_pBData;
-} PlayerStruct;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	/**
+	 * @brief Gets the base value of the player's specified attribute.
+	 * @param attribute The attribute to retrieve the base value for
+	 * @return The base value for the requested attribute.
+	*/
+	Sint32 GetBaseAttributeValue(attribute_id attribute) const;
+
+	/**
+	 * @brief Gets the maximum value of the player's specified attribute.
+	 * @param attribute The attribute to retrieve the maximum value for
+	 * @return The maximum value for the requested attribute.
+	*/
+	Sint32 GetMaximumAttributeValue(attribute_id attribute) const;
+};
 
 extern int myplr;
 extern PlayerStruct plr[MAX_PLRS];
-extern BOOL deathflag;
+extern bool deathflag;
 extern int ToBlkTbl[NUM_CLASSES];
 
 void LoadPlrGFX(int pnum, player_graphic gfxflag);
@@ -249,9 +338,9 @@ void NextPlrLevel(int pnum);
 #endif
 void AddPlrExperience(int pnum, int lvl, int exp);
 void AddPlrMonstExper(int lvl, int exp, char pmask);
-void InitPlayer(int pnum, BOOL FirstTime);
+void InitPlayer(int pnum, bool FirstTime);
 void InitMultiView();
-BOOL SolidLoc(int x, int y);
+bool SolidLoc(int x, int y);
 void PlrClrTrans(int x, int y);
 void PlrDoTrans(int x, int y);
 void SetPlayerOld(int pnum);
@@ -261,19 +350,19 @@ void StartAttack(int pnum, direction d);
 void StartPlrBlock(int pnum, direction dir);
 void FixPlrWalkTags(int pnum);
 void RemovePlrFromMap(int pnum);
-void StartPlrHit(int pnum, int dam, BOOL forcehit);
+void StartPlrHit(int pnum, int dam, bool forcehit);
 void StartPlayerKill(int pnum, int earflag);
 void DropHalfPlayersGold(int pnum);
 void StripTopGold(int pnum);
 void SyncPlrKill(int pnum, int earflag);
 void RemovePlrMissiles(int pnum);
-void StartNewLvl(int pnum, int fom, int lvl);
+void StartNewLvl(int pnum, interface_mode fom, int lvl);
 void RestartTownLvl(int pnum);
 void StartWarpLvl(int pnum, int pidx);
 void ProcessPlayers();
 void ClrPlrPath(int pnum);
-BOOL PosOkPlayer(int pnum, int x, int y);
-void MakePlrPath(int pnum, int xx, int yy, BOOL endspace);
+bool PosOkPlayer(int pnum, int x, int y);
+void MakePlrPath(int pnum, int xx, int yy, bool endspace);
 void CheckPlrSpell();
 void SyncPlrAnim(int pnum);
 void SyncInitPlrPos(int pnum);
@@ -290,9 +379,6 @@ void SetPlrDex(int p, int v);
 void SetPlrVit(int p, int v);
 void InitDungMsgs(int pnum);
 void PlayDungMsgs();
-int get_max_strength(int i);
-int get_max_magic(int i);
-int get_max_dexterity(int i);
 
 /* data */
 
@@ -304,13 +390,6 @@ extern int StrengthTbl[NUM_CLASSES];
 extern int MagicTbl[NUM_CLASSES];
 extern int DexterityTbl[NUM_CLASSES];
 extern int VitalityTbl[NUM_CLASSES];
-extern int MaxStats[NUM_CLASSES][4];
 extern int ExpLvlsTbl[MAXCHARLEVEL];
 
-#ifdef __cplusplus
 }
-#endif
-
-DEVILUTION_END_NAMESPACE
-
-#endif /* __PLAYER_H__ */

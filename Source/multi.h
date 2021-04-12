@@ -3,42 +3,42 @@
  *
  * Interface of functions for keeping multiplayer games in sync.
  */
-#ifndef __MULTI_H__
-#define __MULTI_H__
+#pragma once
 
-DEVILUTION_BEGIN_NAMESPACE
+#include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "msg.h"
 
-typedef struct GameData {
+namespace devilution {
+
+enum event_type : uint8_t {
+	EVENT_TYPE_PLAYER_CREATE_GAME,
+	EVENT_TYPE_PLAYER_LEAVE_GAME,
+	EVENT_TYPE_PLAYER_MESSAGE,
+};
+
+struct GameData {
 	Sint32 size;
 	Sint32 dwSeed;
 	Uint32 programid;
 	Uint8 versionMajor;
 	Uint8 versionMinor;
 	Uint8 versionPatch;
-	Uint8 nDifficulty;
+	_difficulty nDifficulty;
 	Uint8 nTickRate;
-	Uint8 bJogInTown;
+	Uint8 bRunInTown;
 	Uint8 bTheoQuest;
 	Uint8 bCowQuest;
 	Uint8 bFriendlyFire;
-} GameData;
+};
 
-typedef struct _SNETPROGRAMDATA {
-	Sint32 size;
-	Uint8 maxplayers;
-	GameData *initdata;
-} _SNETPROGRAMDATA;
-
-extern BOOLEAN gbSomebodyWonGameKludge;
+extern bool gbSomebodyWonGameKludge;
 extern char szPlayerDescript[128];
 extern WORD sgwPackPlrOffsetTbl[MAX_PLRS];
 extern BYTE gbActivePlayers;
-extern BOOLEAN gbGameDestroyed;
-extern BOOLEAN gbSelectProvider;
+extern bool gbGameDestroyed;
+extern GameData sgGameInitInfo;
+extern bool gbSelectProvider;
 extern bool gbIsMultiplayer;
 extern char szPlayerName[128];
 extern BYTE gbDeltaSender;
@@ -53,17 +53,11 @@ void multi_player_left(int pnum, int reason);
 void multi_net_ping();
 int multi_handle_delta();
 void multi_process_network_packets();
-void multi_send_zero_packet(int pnum, BYTE bCmd, BYTE *pbSrc, DWORD dwLen);
+void multi_send_zero_packet(int pnum, _cmd_id bCmd, BYTE *pbSrc, DWORD dwLen);
 void NetClose();
-BOOL NetInit(BOOL bSinglePlayer, BOOL *pfExitProgram);
-BOOL multi_init_single(_SNETPROGRAMDATA *client_info, _SNETPLAYERDATA *user_info, _SNETUIDATA *ui_info);
-BOOL multi_init_multi(_SNETPROGRAMDATA *client_info, _SNETPLAYERDATA *user_info, _SNETUIDATA *ui_info, BOOL *pfExitProgram);
-void recv_plrinfo(int pnum, TCmdPlrInfoHdr *p, BOOL recv);
+bool NetInit(bool bSinglePlayer, bool *pfExitProgram);
+bool multi_init_single(GameData *gameData);
+bool multi_init_multi(GameData *gameData, bool *pfExitProgram);
+void recv_plrinfo(int pnum, TCmdPlrInfoHdr *p, bool recv);
 
-#ifdef __cplusplus
 }
-#endif
-
-DEVILUTION_END_NAMESPACE
-
-#endif /* __MULTI_H__ */

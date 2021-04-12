@@ -10,7 +10,7 @@
 
 #define SPLICONLENGTH 56
 
-namespace dvl {
+namespace devilution {
 
 bool sgbControllerActive = false;
 coords speedspellscoords[50];
@@ -113,8 +113,8 @@ void FindItemOrObject()
 			if (dItem[mx + xx][my + yy] <= 0)
 				continue;
 			int i = dItem[mx + xx][my + yy] - 1;
-			if (item[i].isEmpty()
-			    || item[i]._iSelFlag == 0)
+			if (items[i].isEmpty()
+			    || items[i]._iSelFlag == 0)
 				continue;
 			int newRotations = GetRotaryDistance(mx + xx, my + yy);
 			if (rotations < newRotations)
@@ -842,7 +842,7 @@ void StoreMove(AxisDirection move_dir)
 		STextDown();
 }
 
-typedef void (*HandleLeftStickOrDPadFn)(dvl::AxisDirection);
+typedef void (*HandleLeftStickOrDPadFn)(devilution::AxisDirection);
 
 HandleLeftStickOrDPadFn GetLeftStickOrDPadGameUIHandler()
 {
@@ -862,7 +862,8 @@ HandleLeftStickOrDPadFn GetLeftStickOrDPadGameUIHandler()
 	return NULL;
 }
 
-void ProcessLeftStickOrDPadGameUI() {
+void ProcessLeftStickOrDPadGameUI()
+{
 	HandleLeftStickOrDPadFn handler = GetLeftStickOrDPadGameUIHandler();
 	if (handler != NULL)
 		handler(GetLeftStickOrDpadDirection(true));
@@ -930,7 +931,7 @@ void StoreSpellCoords()
 	speedspellcount = 0;
 	int xo = END_X;
 	int yo = END_Y;
-	for (int i = 0; i < 4; i++) {
+	for (int i = RSPLTYPE_SKILL; i <= RSPLTYPE_CHARGES; i++) {
 		std::uint64_t spells;
 		switch (i) {
 		case RSPLTYPE_SKILL:
@@ -945,8 +946,6 @@ void StoreSpellCoords()
 		case RSPLTYPE_CHARGES:
 			spells = plr[myplr]._pISpells;
 			break;
-		default:
-			continue;
 		}
 		std::uint64_t spell = 1;
 		for (int j = 1; j < MAX_SPELLS; j++) {
@@ -1010,8 +1009,7 @@ void HandleRightStickMotion()
 		// cursor position events.
 		static int lastMouseSetTick = 0;
 		const int now = SDL_GetTicks();
-		if (now - lastMouseSetTick > 0)
-		{
+		if (now - lastMouseSetTick > 0) {
 			SetCursorPos(x, y);
 			lastMouseSetTick = now;
 		}
@@ -1082,7 +1080,7 @@ void PerformPrimaryAction()
 	if (invflag) { // inventory is open
 		if (pcurs > CURSOR_HAND && pcurs < CURSOR_FIRSTITEM) {
 			TryIconCurs();
-			SetCursor_(CURSOR_HAND);
+			NewCursor(CURSOR_HAND);
 		} else {
 			CheckInvItem();
 		}
@@ -1171,7 +1169,7 @@ void PerformSpellAction()
 			TryDropItem();
 		else if (pcurs > CURSOR_HAND) {
 			TryIconCurs();
-			SetCursor_(CURSOR_HAND);
+			NewCursor(CURSOR_HAND);
 		}
 		return;
 	}
@@ -1179,7 +1177,7 @@ void PerformSpellAction()
 	if (pcurs >= CURSOR_FIRSTITEM && !TryDropItem())
 		return;
 	if (pcurs > CURSOR_HAND)
-		SetCursor_(CURSOR_HAND);
+		NewCursor(CURSOR_HAND);
 
 	if (spselflag) {
 		SetSpell();
@@ -1232,7 +1230,7 @@ void PerformSecondaryAction()
 	if (pcurs >= CURSOR_FIRSTITEM && !TryDropItem())
 		return;
 	if (pcurs > CURSOR_HAND)
-		SetCursor_(CURSOR_HAND);
+		NewCursor(CURSOR_HAND);
 
 	if (pcursitem != -1) {
 		NetSendCmdLocParam1(true, CMD_GOTOAGETITEM, cursmx, cursmy, pcursitem);
@@ -1250,4 +1248,4 @@ void PerformSecondaryAction()
 	}
 }
 
-} // namespace dvl
+} // namespace devilution
