@@ -1012,6 +1012,8 @@ void HandleRightStickMotion()
 		if (now - lastMouseSetTick > 0) {
 			SetCursorPos(x, y);
 			lastMouseSetTick = now;
+			MouseX = x;
+			MouseY = y;
 		}
 	}
 }
